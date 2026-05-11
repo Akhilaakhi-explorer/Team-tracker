@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Team Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0E0E0F;
+  --surface: #18181A;
+  --surface2: #222225;
+  --surface3: #2A2A2E;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --text: #F2F1EE;
+  --text2: #8E8C87;
+  --text3: #5A5855;
+  --accent: #C8F060;
+  --radius: 14px;
+  --radius-sm: 9px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+.topbar{position:sticky;top:0;z-index:100;background:rgba(14,14,15,0.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.brand{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:10px;}
+.brand-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);animation:glow 2s infinite;}
+@keyframes glow{0%,100%{box-shadow:0 0 6px var(--accent);}50%{box-shadow:0 0 18px var(--accent);}}
+.live-pill{font-size:11px;font-weight:500;padding:3px 10px;border-radius:99px;border:1px solid rgba(200,240,96,0.2);background:rgba(200,240,96,0.08);color:var(--accent);}
+.topbar-right{display:flex;gap:8px;align-items:center;}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;font-family:'Instrument Sans',sans-serif;transition:all 0.15s;border:1px solid var(--border2);background:var(--surface2);color:var(--text);}
+.btn:hover{background:var(--surface3);}
+.btn-accent{background:var(--accent);color:#0E0E0F;border-color:transparent;font-weight:600;}
+.btn-accent:hover{background:#d4f570;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+.container{max-width:880px;margin:0 auto;padding:28px 20px;}
+
+/* ── SETUP ── */
+.setup{background:var(--surface);border:1px solid rgba(200,240,96,0.2);border-radius:var(--radius);padding:24px;margin-bottom:24px;}
+.setup-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--accent);margin-bottom:18px;}
+.steps{display:flex;flex-direction:column;gap:16px;}
+.step{display:flex;gap:12px;}
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#0E0E0F;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.step-body{flex:1;font-size:13px;color:var(--text2);line-height:1.8;}
+.step-body strong{color:var(--text);}
+.step-body a{color:var(--accent);text-decoration:none;}
+.step-body a:hover{text-decoration:underline;}
+.step-body code{background:var(--surface2);padding:1px 7px;border-radius:5px;font-family:monospace;color:var(--accent);font-size:12px;border:1px solid var(--border2);}
+.input-row{display:flex;gap:8px;margin-top:10px;}
+.input-row input{flex:1;padding:10px 13px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:13px;font-family:'Instrument Sans',sans-serif;outline:none;}
+.input-row input:focus{border-color:rgba(200,240,96,0.4);}
+.input-row input::placeholder{color:var(--text3);}
+
+/* ── STATS ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
+.stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.stat-value{font-family:'Syne',sans-serif;font-size:30px;font-weight:700;color:var(--text);letter-spacing:-1.5px;line-height:1;}
+.stat-value.accent{color:var(--accent);}
+
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sec-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;}
+.refresh-info{font-size:11px;color:var(--text3);}
+
+/* ── CARDS ── */
+.members{display:flex;flex-direction:column;gap:6px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:15px 18px;display:grid;grid-template-columns:auto 160px 1fr auto auto;align-items:center;gap:14px;transition:all 0.15s;animation:fadeUp 0.25s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:none;}}
+.card:hover{border-color:var(--border2);background:var(--surface2);}
+.avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;flex-shrink:0;}
+.member-info{min-width:0;}
+.member-name{font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.member-role{font-size:12px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.activity-col{min-width:0;}
+.activity-text{font-size:13px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.activity-time{font-size:11px;color:var(--text3);margin-top:3px;}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;white-space:nowrap;flex-shrink:0;}
+.badge-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.badge-working{background:rgba(59,130,246,0.12);color:#93C5FD;}.badge-working .badge-dot{background:#3B82F6;}
+.badge-call{background:rgba(34,197,94,0.12);color:#86EFAC;}.badge-call .badge-dot{background:#22C55E;}
+.badge-review{background:rgba(251,191,36,0.12);color:#FDE68A;}.badge-review .badge-dot{background:#FBBF24;}
+.badge-idle{background:rgba(255,255,255,0.06);color:var(--text2);}.badge-idle .badge-dot{background:var(--text3);}
+.badge-away{background:rgba(239,68,68,0.1);color:#FCA5A5;}.badge-away .badge-dot{background:#EF4444;}
+.card-actions{display:flex;gap:6px;}
+.icon-btn{width:32px;height:32px;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;color:var(--text3);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.icon-btn:hover{background:var(--surface3);color:var(--text);}
+.icon-btn.del:hover{background:rgba(239,68,68,0.12);color:#FCA5A5;}
+
+.empty{text-align:center;padding:48px 20px;color:var(--text3);font-size:14px;line-height:2;}
+.spinner{width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px;}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:26px;width:420px;max-width:100%;box-shadow:0 32px 80px rgba(0,0,0,0.5);}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text);margin-bottom:20px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;font-weight:500;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;}
+.field input,.field select{width:100%;padding:10px 13px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:13px;font-family:'Instrument Sans',sans-serif;outline:none;transition:border-color 0.15s;}
+.field input:focus,.field select:focus{border-color:rgba(200,240,96,0.4);}
+.field select option{background:#18181A;}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:22px;align-items:center;}
+.saving-note{font-size:12px;color:var(--text3);margin-right:auto;display:none;align-items:center;gap:6px;}
+.saving-note.show{display:flex;}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--text);color:var(--bg);padding:10px 20px;border-radius:99px;font-size:13px;font-weight:600;opacity:0;transition:all 0.25s;z-index:300;white-space:nowrap;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@media(max-width:640px){
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .card{grid-template-columns:auto 1fr auto;}
+  .activity-col{display:none;}
+  .container{padding:16px 12px;}
+  .topbar{padding:0 14px;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span class="brand-dot"></span>Team Tracker</div>
+  <div class="topbar-right">
+    <span class="live-pill" id="live-pill">⚙ Setup needed</span>
+    <button class="btn" onclick="openAdd()">+ Add member</button>
+    <button class="btn btn-accent" onclick="openUpdate(null)">Update my status</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- SETUP PANEL -->
+  <div class="setup" id="setup-panel">
+    <div class="setup-title">⚡ One-time setup — 3 steps, 2 minutes</div>
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          Go to <a href="https://jsonbin.io" target="_blank">jsonbin.io</a> → click <strong>Sign Up</strong> (free) → verify your email → log in.
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          After logging in, click <strong>API Keys</strong> in the left sidebar → click <strong>Create Access Key</strong> → name it anything → copy the key that starts with <code>$2b$...</code>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          Paste your API key below and click <strong>Connect</strong>. The app will create your team database automatically. Then deploy to Vercel and share the link — done!
+          <div class="input-row">
+            <input type="text" id="api-key-input" placeholder="$2b$10$…  paste your JSONBin API key here"/>
+            <button class="btn btn-accent" onclick="connect()">Connect →</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-value" id="s-total">—</div></div>
+    <div class="stat"><div class="stat-label">Active</div><div class="stat-value accent" id="s-active">—</div></div>
+    <div class="stat"><div class="stat-label">In calls</div><div class="stat-value" id="s-calls">—</div></div>
+    <div class="stat"><div class="stat-label">Available</div><div class="stat-value" id="s-idle">—</div></div>
+  </div>
+
+  <div class="sec-header">
+    <span class="sec-title">Team members</span>
+    <span class="refresh-info" id="refresh-info">Refreshes every 15s</span>
+  </div>
+  <div class="members" id="members-list">
+    <div class="empty">Complete the setup above to get started.</div>
+  </div>
+</div>
+
+<!-- UPDATE MODAL -->
+<div class="overlay" id="update-modal" style="display:none;" onclick="if(event.target===this)closeModal('update-modal')">
+  <div class="modal">
+    <p class="modal-title" id="update-title">Update status</p>
+    <div class="field">
+      <label>Team member</label>
+      <select id="m-member"></select>
+    </div>
+    <div class="field">
+      <label>What are you working on?</label>
+      <input type="text" id="m-activity" placeholder="e.g. Solving ticket #204, in standup…"/>
+    </div>
+    <div class="field">
+      <label>Status</label>
+      <select id="m-status">
+        <option value="working">🔵 Working on task</option>
+        <option value="call">🟢 In a call</option>
+        <option value="review">🟡 In review</option>
+        <option value="idle">⚪ Available</option>
+        <option value="away">🔴 Away / Offline</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <span class="saving-note" id="saving-note"><div class="spinner" style="width:14px;height:14px;margin:0;"></div> Saving…</span>
+      <button class="btn" onclick="closeModal('update-modal')">Cancel</button>
+      <button class="btn btn-accent" id="save-btn" onclick="saveUpdate()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MEMBER MODAL -->
+<div class="overlay" id="add-modal" style="display:none;" onclick="if(event.target===this)closeModal('add-modal')">
+  <div class="modal">
+    <p class="modal-title">Add team member</p>
+    <div class="field">
+      <label>Full name</label>
+      <input type="text" id="n-name" placeholder="e.g. Priya Nair"/>
+    </div>
+    <div class="field">
+      <label>Role</label>
+      <input type="text" id="n-role" placeholder="e.g. Frontend Developer"/>
+    </div>
+    <div class="modal-footer">
+      <span class="saving-note" id="add-note"><div class="spinner" style="width:14px;height:14px;margin:0;"></div> Adding…</span>
+      <button class="btn" onclick="closeModal('add-modal')">Cancel</button>
+      <button class="btn btn-accent" id="add-btn" onclick="addMember()">Add member</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Config — filled after setup ──
+// To pre-fill for your team after setup, replace the empty strings below:
+const PRESET_API_KEY = "";   // paste your JSONBin API key here before deploying to Vercel
+const PRESET_BIN_ID  = "";   // paste your Bin ID here before deploying to Vercel
+
+const KEY_APIKEY = "tt-apikey";
+const KEY_BINID  = "tt-binid";
+const JSONBIN_BASE = "https://api.jsonbin.io/v3";
+
+const AVATARS = [
+  {bg:"#2A2060",c:"#C4B5FD"},{bg:"#0F3D2A",c:"#6EE7B7"},
+  {bg:"#3D1A0F",c:"#FCA5A5"},{bg:"#2D2000",c:"#FDE68A"},
+  {bg:"#102040",c:"#93C5FD"},{bg:"#2A0F30",c:"#F0ABFC"},
+  {bg:"#1A2E10",c:"#BEF264"},{bg:"#2A1A00",c:"#FCD34D"},
+];
+const STATUS_CFG = {
+  working:{label:"Working",cls:"badge-working"},
+  call:   {label:"In a call",cls:"badge-call"},
+  review: {label:"In review",cls:"badge-review"},
+  idle:   {label:"Available",cls:"badge-idle"},
+  away:   {label:"Away",cls:"badge-away"},
+};
+
+let API_KEY = PRESET_API_KEY || localStorage.getItem(KEY_APIKEY) || "";
+let BIN_ID  = PRESET_BIN_ID  || localStorage.getItem(KEY_BINID)  || "";
+let members = {};
+
+// ── JSONBin helpers ──
+async function binGet() {
+  const r = await fetch(`${JSONBIN_BASE}/b/${BIN_ID}/latest`, {
+    headers: { "X-Master-Key": API_KEY }
+  });
+  if (!r.ok) throw new Error("GET failed");
+  const d = await r.json();
+  return d.record.members || {};
+}
+
+async function binSet(data) {
+  const r = await fetch(`${JSONBIN_BASE}/b/${BIN_ID}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", "X-Master-Key": API_KEY },
+    body: JSON.stringify({ members: data })
+  });
+  if (!r.ok) throw new Error("PUT failed");
+}
+
+async function binCreate() {
+  const r = await fetch(`${JSONBIN_BASE}/b`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Master-Key": API_KEY, "X-Bin-Name": "team-tracker", "X-Bin-Private": "false" },
+    body: JSON.stringify({ members: {} })
+  });
+  if (!r.ok) throw new Error("Create failed");
+  const d = await r.json();
+  return d.metadata.id;
+}
+
+// ── Connect (setup) ──
+async function connect() {
+  const key = document.getElementById("api-key-input").value.trim();
+  if (!key) { toast("⚠ Paste your API key first"); return; }
+  API_KEY = key;
+  toast("⏳ Creating your database…");
+  try {
+    const id = await binCreate();
+    BIN_ID = id;
+    localStorage.setItem(KEY_APIKEY, API_KEY);
+    localStorage.setItem(KEY_BINID, BIN_ID);
+    document.getElementById("setup-panel").style.display = "none";
+    toast("✓ Connected! You're live. Share this URL with your team.");
+
+    // Show the IDs so user can bake them into the file for Vercel
+    setTimeout(() => {
+      alert(`✅ Setup complete!\n\nTo make it work for everyone on Vercel without setup:\n\nOpen index.html in VS Code and set:\nPRESET_API_KEY = "${API_KEY}"\nPRESET_BIN_ID  = "${BIN_ID}"\n\nThen redeploy to Vercel. Done!`);
+    }, 500);
+    load();
+  } catch(e) {
+    toast("⚠ Could not connect — check your API key");
+  }
+}
+
+// ── Load & render ──
+async function load() {
+  if (!API_KEY || !BIN_ID) return;
+  try {
+    members = await binGet();
+    render();
+    document.getElementById("refresh-info").textContent = "Updated " + new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+    setLive(true);
+  } catch { setLive(false); }
+}
+
+function setLive(ok) {
+  const p = document.getElementById("live-pill");
+  if (ok) { p.textContent = "● Live"; p.style.color = "var(--accent)"; }
+  else     { p.textContent = "⚠ Error"; p.style.color = "#FCA5A5"; }
+}
+
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+function avColor(name) { let h=0; for(let c of name) h=(h*31+c.charCodeAt(0))%AVATARS.length; return AVATARS[h]; }
+function initials(name) { return name.trim().split(/\s+/).map(p=>p[0]).join("").toUpperCase().slice(0,2); }
+function timeAgo(ts) {
+  if (!ts) return "—";
+  const diff = Math.floor((Date.now() - ts) / 1000);
+  if (diff < 10) return "just now";
+  if (diff < 60) return diff + "s ago";
+  if (diff < 3600) return Math.floor(diff/60) + "m ago";
+  if (diff < 86400) return Math.floor(diff/3600) + "h ago";
+  return Math.floor(diff/86400) + "d ago";
+}
+
+function render() {
+  const entries = Object.entries(members);
+  const vals = entries.map(e => e[1]);
+  document.getElementById("s-total").textContent = vals.length;
+  document.getElementById("s-active").textContent = vals.filter(m => m.status==="working"||m.status==="review").length;
+  document.getElementById("s-calls").textContent = vals.filter(m => m.status==="call").length;
+  document.getElementById("s-idle").textContent = vals.filter(m => m.status==="idle").length;
+
+  const list = document.getElementById("members-list");
+  if (!entries.length) {
+    list.innerHTML = '<div class="empty">No team members yet.<br/>Click <strong>+ Add member</strong> to get started.</div>';
+    return;
+  }
+  list.innerHTML = entries.map(([id,m],i) => {
+    const sc = STATUS_CFG[m.status] || STATUS_CFG.idle;
+    const av = avColor(m.name || "?");
+    return `<div class="card" style="animation-delay:${i*35}ms">
+      <div class="avatar" style="background:${av.bg};color:${av.c};">${initials(m.name)}</div>
+      <div class="member-info">
+        <div class="member-name">${m.name}</div>
+        <div class="member-role">${m.role||""}</div>
+      </div>
+      <div class="activity-col">
+        <div class="activity-text">${m.activity||"<span style='color:var(--text3)'>No activity set</span>"}</div>
+        <div class="activity-time">Updated ${timeAgo(m.updatedAt)}</div>
+      </div>
+      <div class="badge ${sc.cls}"><span class="badge-dot"></span>${sc.label}</div>
+      <div class="card-actions">
+        <button class="icon-btn" onclick="openUpdate('${id}')">✏️</button>
+        <button class="icon-btn del" onclick="removeMember('${id}','${m.name}')">🗑</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ── Update modal ──
+function openUpdate(id) {
+  if (!API_KEY) { toast("⚠ Complete setup first"); return; }
+  const sel = document.getElementById("m-member");
+  sel.innerHTML = Object.entries(members).map(([k,m]) => `<option value="${k}">${m.name}</option>`).join("");
+  if (id) sel.value = id;
+  const m = members[sel.value];
+  if (m) { document.getElementById("m-activity").value = m.activity||""; document.getElementById("m-status").value = m.status||"idle"; }
+  document.getElementById("update-title").textContent = id && m ? `Update — ${m.name}` : "Update status";
+  document.getElementById("update-modal").style.display = "flex";
+}
+document.getElementById("m-member").addEventListener("change", function() {
+  const m = members[this.value];
+  if (m) { document.getElementById("m-activity").value = m.activity||""; document.getElementById("m-status").value = m.status||"idle"; }
+});
+async function saveUpdate() {
+  const id = document.getElementById("m-member").value;
+  const activity = document.getElementById("m-activity").value.trim();
+  const status = document.getElementById("m-status").value;
+  const note = document.getElementById("saving-note");
+  const btn = document.getElementById("save-btn");
+  note.classList.add("show"); btn.disabled = true;
+  try {
+    members[id] = { ...members[id], activity, status, updatedAt: Date.now() };
+    await binSet(members);
+    closeModal("update-modal");
+    toast("✓ Status updated!");
+    render();
+  } catch { toast("⚠ Save failed"); }
+  finally { note.classList.remove("show"); btn.disabled = false; }
+}
+
+// ── Add member ──
+function openAdd() {
+  if (!API_KEY) { toast("⚠ Complete setup first"); return; }
+  document.getElementById("n-name").value = "";
+  document.getElementById("n-role").value = "";
+  document.getElementById("add-modal").style.display = "flex";
+  setTimeout(() => document.getElementById("n-name").focus(), 50);
+}
+async function addMember() {
+  const name = document.getElementById("n-name").value.trim();
+  const role = document.getElementById("n-role").value.trim();
+  if (!name) { document.getElementById("n-name").focus(); return; }
+  const note = document.getElementById("add-note");
+  const btn = document.getElementById("add-btn");
+  note.classList.add("show"); btn.disabled = true;
+  try {
+    const id = genId();
+    members[id] = { name, role: role||"Team member", status:"idle", activity:"", updatedAt: Date.now() };
+    await binSet(members);
+    closeModal("add-modal");
+    toast("✓ Member added!");
+    render();
+  } catch { toast("⚠ Could not add member"); }
+  finally { note.classList.remove("show"); btn.disabled = false; }
+}
+
+// ── Remove ──
+async function removeMember(id, name) {
+  if (!confirm(`Remove ${name}?`)) return;
+  try {
+    delete members[id];
+    await binSet(members);
+    toast("✓ Removed");
+    render();
+  } catch { toast("⚠ Could not remove"); }
+}
+
+// ── Helpers ──
+function closeModal(id) { document.getElementById(id).style.display = "none"; }
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 3500);
+}
+document.addEventListener("keydown", e => { if(e.key==="Escape"){closeModal("update-modal");closeModal("add-modal");} });
+
+// ── Init ──
+if (API_KEY && BIN_ID) {
+  document.getElementById("setup-panel").style.display = "none";
+  load();
+}
+setInterval(load, 15000);
+</script>
+</body>
+</html>
