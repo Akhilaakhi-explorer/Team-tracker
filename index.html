@@ -236,8 +236,8 @@ body{font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--t
 <script>
 // ── Config — filled after setup ──
 // To pre-fill for your team after setup, replace the empty strings below:
-const PRESET_API_KEY = "$2a$10$HACPsfI.5d8fia/wTbppXed5jpNJBKj8bg1lALUhHK.yz451Tsjq";
-const PRESET_BIN_ID  = "6a021e8badc21f119a85e4e3";
+const PRESET_API_KEY = "$2a$10$rnyCjILboYLo21tort8E4u.LESIz5yANprDDUbPzpemjmI26G6NsG";
+const PRESET_BIN_ID  = "6a02ece2adc21f119a8a5cf1";
 
 const KEY_APIKEY = "tt-apikey";
 const KEY_BINID  = "tt-binid";
@@ -463,7 +463,7 @@ function toast(msg) {
 document.addEventListener("keydown", e => { if(e.key==="Escape"){closeModal("update-modal");closeModal("add-modal");} });
 
 // ── Init ──
-if (API_KEY && BIN_ID) {
+if (true) {
   document.getElementById("setup-panel").style.display = "none";
   load();
 }
